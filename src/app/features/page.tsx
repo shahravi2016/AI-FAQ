@@ -64,7 +64,7 @@ export default function FeaturesPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2 text-moonlight">Secure & Private</h2>
               <p className="text-nebula">
-                Your conversations are private and secure. We don't store personal data or share your questions with
+                Your conversations are private and secure. We don&apos;t store personal data or share your questions with
                 third parties. Use our assistant with complete peace of mind.
               </p>
             </div>

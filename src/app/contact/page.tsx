@@ -21,7 +21,7 @@ export default function ContactPage() {
             <div className="border border-meteor/50 rounded-lg p-6 bg-meteor/30 backdrop-blur-sm">
               <h2 className="text-2xl font-semibold mb-4 text-moonlight">Get In Touch</h2>
               <p className="text-nebula mb-6">
-                Have questions, feedback, or suggestions? We'd love to hear from you! Fill out the form and our team
+                Have questions, feedback, or suggestions? We&apos;d love to hear from you! Fill out the form and our team
                 will get back to you as soon as possible.
               </p>
 
