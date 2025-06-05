@@ -17,5 +17,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
+# Create startup script with error handling
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Starting database migrations..."\n\
+alembic upgrade head || { echo "Migration failed"; exit 1; }\n\
+echo "Migrations completed successfully"\n\
+echo "Starting FastAPI application..."\n\
+exec uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug' > /app/start.sh && \
+chmod +x /app/start.sh
+
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["/app/start.sh"] 
