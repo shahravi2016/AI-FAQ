@@ -17,30 +17,39 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Create startup script with retry logic
+# Create database check script
+RUN echo 'import time\n\
+import os\n\
+from sqlalchemy import create_engine\n\
+from sqlalchemy.exc import OperationalError\n\
+\n\
+def check_db():\n\
+    try:\n\
+        engine = create_engine(os.getenv("DATABASE_URL"))\n\
+        with engine.connect() as conn:\n\
+            conn.execute("SELECT 1")\n\
+        return True\n\
+    except Exception as e:\n\
+        print(f"Database connection failed: {str(e)}")\n\
+        return False\n\
+\n\
+print("Waiting for database to be ready...")\n\
+for i in range(30):\n\
+    if check_db():\n\
+        print("Database is ready!")\n\
+        exit(0)\n\
+    print(f"Attempt {i+1}: Database not ready yet. Waiting...")\n\
+    time.sleep(2)\n\
+\n\
+print("Database connection timeout after 60 seconds")\n\
+exit(1)' > /app/check_db.py
+
+# Create startup script
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Function to check if database is ready\n\
-check_db() {\n\
-    mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "SELECT 1" > /dev/null 2>&1\n\
-    return $?\n\
-}\n\
-\n\
-# Wait for database to be ready\n\
-echo "Waiting for database to be ready..."\n\
-for i in {1..30}; do\n\
-    if check_db; then\n\
-        echo "Database is ready!"\n\
-        break\n\
-    fi\n\
-    echo "Attempt $i: Database not ready yet. Waiting..."\n\
-    sleep 2\n\
-    if [ $i -eq 30 ]; then\n\
-        echo "Database connection timeout after 60 seconds"\n\
-        exit 1\n\
-    fi\n\
-done\n\
+echo "Checking database connection..."\n\
+python /app/check_db.py || exit 1\n\
 \n\
 echo "Starting database migrations..."\n\
 alembic upgrade head || { echo "Migration failed"; exit 1; }\n\
