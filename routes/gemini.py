@@ -83,7 +83,7 @@ async def ask_question(req: Request, db: Session = Depends(get_db)):
     logger.info(f"Categorized question as: {category} (importance: {importance}, critical: {is_critical})")
 
     prompt = f"""
-    You are an intelligent AI assistant for a web-based FAQ system. Answer questions clearly and helpfully based on the topic "{{faq_topic}}".
+    You are an intelligent AI assistant for a web-based FAQ system. Answer questions clearly and helpfully based on any topic.
     If the user asks a question that matches the common FAQ style, provide a brief, accurate, and helpful response.
     If the question is vague or not directly answerable, respond politely and guide the user to rephrase or ask something more specific.
     Maintain a helpful, friendly, and professional tone. Do not invent information—respond with “I'm not sure, but I can look into it” when uncertain.
