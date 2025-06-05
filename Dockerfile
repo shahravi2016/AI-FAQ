@@ -23,7 +23,7 @@ set -e\n\
 \n\
 # Function to check if database is ready\n\
 check_db() {\n\
-    mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWORD -e "SELECT 1" > /dev/null 2>&1\n\
+    mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "SELECT 1" > /dev/null 2>&1\n\
     return $?\n\
 }\n\
 \n\
