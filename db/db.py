@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv
@@ -17,11 +17,17 @@ if DATABASE_URL.startswith('mysql://'):
 else:
     # Convert to SQLAlchemy format if needed
     parsed = urllib.parse.urlparse(DATABASE_URL)
-    DATABASE_URL = f"mysql://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}{parsed.path}"
+    DATABASE_URL = f"mysql+mysqlconnector://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}{parsed.path}"
 
 # Add additional connection parameters
 DATABASE_URL += "?charset=utf8mb4"
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    pool_size=5,
+    max_overflow=10
+)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()

@@ -20,14 +20,15 @@ COPY . .
 # Create database check script
 RUN echo 'import time\n\
 import os\n\
-from sqlalchemy import create_engine\n\
+from sqlalchemy import create_engine, text\n\
 from sqlalchemy.exc import OperationalError\n\
 \n\
 def check_db():\n\
     try:\n\
         engine = create_engine(os.getenv("DATABASE_URL"))\n\
         with engine.connect() as conn:\n\
-            conn.execute("SELECT 1")\n\
+            conn.execute(text("SELECT 1"))\n\
+            conn.commit()\n\
         return True\n\
     except Exception as e:\n\
         print(f"Database connection failed: {str(e)}")\n\
