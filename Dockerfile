@@ -50,7 +50,7 @@ echo "Migrations completed successfully"\n\
 \n\
 # Start the application with gunicorn for better production handling\n\
 echo "Starting FastAPI application with gunicorn..."\n\
-exec gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --timeout 120' > /app/start.sh && \
+exec gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --timeout 120 --keep-alive 5 --max-requests 1000 --max-requests-jitter 50' > /app/start.sh && \
 chmod +x /app/start.sh
 
 # Install gunicorn

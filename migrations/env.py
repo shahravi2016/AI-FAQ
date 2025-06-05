@@ -1,18 +1,44 @@
 from logging.config import fileConfig
 import os
+import sys
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+import urllib.parse
+
+# Add the parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+
+# Get DATABASE_URL and format it properly
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
+# Parse the DATABASE_URL to ensure it's in the correct format
+if DATABASE_URL.startswith('mysql://'):
+    # Already in correct format
+    pass
+else:
+    # Convert to SQLAlchemy format if needed
+    parsed = urllib.parse.urlparse(DATABASE_URL)
+    DATABASE_URL = f"mysql+mysqlconnector://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}{parsed.path}"
+
+# Add additional connection parameters
+DATABASE_URL += "?charset=utf8mb4"
+
+# Set the SQLAlchemy URL in the alembic.ini file
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
 from db.models import Base
 target_metadata = Base.metadata
 
@@ -53,15 +79,18 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = DATABASE_URL
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata
         )
 
         with context.begin_transaction():
