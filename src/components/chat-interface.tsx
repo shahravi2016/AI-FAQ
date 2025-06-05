@@ -39,8 +39,8 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
     setIsLoading(true)
 
     try {
-      // Call the backend API
-      const response = await fetch("http://localhost:8000/api/ask", {
+      // Call our API route instead of the backend directly
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,16 +49,17 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       })
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`)
+        const errorData = await response.json()
+        throw new Error(errorData.error || `API error: ${response.statusText}`)
       }
 
       const data = await response.json()
-      console.log("Backend response:", data) // Add logging to debug
+      console.log("API response:", data)
 
       // Add AI response
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response, // Changed from data.text to data.response to match backend
+        content: data.text, // Use data.text as that's what our API route returns
         role: "assistant",
         timestamp: new Date(),
       }
@@ -67,10 +68,10 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
     } catch (error) {
       console.error("Error generating response:", error)
 
-      // Add error message
+      // Add error message with more specific error details
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Sorry, I couldn't generate a response. Please try again.",
+        content: error instanceof Error ? error.message : "Sorry, I couldn't generate a response. Please try again.",
         role: "assistant",
         timestamp: new Date(),
         isError: true,
