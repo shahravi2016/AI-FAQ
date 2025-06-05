@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.9-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
     default-mysql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -14,51 +15,46 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy migrations directory first
+COPY migrations/ migrations/
+
+# Copy alembic.ini
+COPY alembic.ini .
+
 # Copy the rest of the application
 COPY . .
 
-# Create database check script
-RUN echo 'import time\n\
-import os\n\
-from sqlalchemy import create_engine, text\n\
-from sqlalchemy.exc import OperationalError\n\
-\n\
-def check_db():\n\
-    try:\n\
-        engine = create_engine(os.getenv("DATABASE_URL"))\n\
-        with engine.connect() as conn:\n\
-            conn.execute(text("SELECT 1"))\n\
-            conn.commit()\n\
-        return True\n\
-    except Exception as e:\n\
-        print(f"Database connection failed: {str(e)}")\n\
-        return False\n\
-\n\
-print("Waiting for database to be ready...")\n\
-for i in range(30):\n\
-    if check_db():\n\
-        print("Database is ready!")\n\
-        exit(0)\n\
-    print(f"Attempt {i+1}: Database not ready yet. Waiting...")\n\
-    time.sleep(2)\n\
-\n\
-print("Database connection timeout after 60 seconds")\n\
-exit(1)' > /app/check_db.py
-
-# Create startup script
+# Create startup script with migrations and health checks
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-echo "Checking database connection..."\n\
-python /app/check_db.py || exit 1\n\
+echo "Starting application..."\n\
 \n\
-echo "Starting database migrations..."\n\
+# Function to check if port is available\n\
+check_port() {\n\
+    netstat -tuln | grep -q ":$1 "\n\
+    return $?\n\
+}\n\
+\n\
+# Wait for port 8000 to be available\n\
+echo "Checking if port 8000 is available..."\n\
+if check_port 8000; then\n\
+    echo "Port 8000 is already in use"\n\
+    exit 1\n\
+fi\n\
+\n\
+# Run database migrations\n\
+echo "Running database migrations..."\n\
 alembic upgrade head || { echo "Migration failed"; exit 1; }\n\
 echo "Migrations completed successfully"\n\
 \n\
-echo "Starting FastAPI application..."\n\
-exec uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug' > /app/start.sh && \
+# Start the application with gunicorn for better production handling\n\
+echo "Starting FastAPI application with gunicorn..."\n\
+exec gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level debug --timeout 120' > /app/start.sh && \
 chmod +x /app/start.sh
+
+# Install gunicorn
+RUN pip install gunicorn
 
 # Command to run the application
 CMD ["/app/start.sh"] 
