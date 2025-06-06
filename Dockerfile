@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -16,18 +16,27 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Create a script to validate environment variables
+# Create a script to check database connection
 RUN echo '#!/usr/bin/env python3\n\
 import os\n\
-import sys\n\
+import time\n\
+import mysql.connector\n\
 import logging\n\
+import sys\n\
 \n\
+# Configure logging\n\
 logging.basicConfig(level=logging.INFO)\n\
 logger = logging.getLogger(__name__)\n\
 \n\
 def validate_env():\n\
+    """Validate that all required environment variables are set."""\n\
+    # Check for either MYSQL_URL or individual components\n\
+    if os.getenv("MYSQL_URL"):\n\
+        logger.info("Using MYSQL_URL from environment")\n\
+        return True\n\
+        \n\
+    # Check for individual components\n\
     required_vars = [\n\
-        "MYSQL_URL",\n\
         "MYSQLHOST",\n\
         "MYSQLPORT",\n\
         "MYSQLUSER",\n\
@@ -47,98 +56,106 @@ def validate_env():\n\
     logger.info("All required environment variables are set")\n\
     return True\n\
 \n\
-if __name__ == "__main__":\n\
-    if not validate_env():\n\
-        sys.exit(1)\n\
-' > validate_env.py
-
-RUN chmod +x validate_env.py
-
-# Create a script to check database connection
-RUN echo '#!/usr/bin/env python3\n\
-import os\n\
-import time\n\
-import logging\n\
-from sqlalchemy import create_engine\n\
-from sqlalchemy.exc import OperationalError\n\
-\n\
-logging.basicConfig(level=logging.INFO)\n\
-logger = logging.getLogger(__name__)\n\
-\n\
 def check_db():\n\
-    max_attempts = 5  # Reduced to 5 attempts\n\
+    """Check database connection with retry logic."""\n\
+    max_attempts = 5  # Reduced to 5 retries\n\
     attempt = 0\n\
-    \n\
-    # Get database URL from environment\n\
-    db_url = os.getenv("MYSQL_URL")\n\
-    if not db_url:\n\
-        # Construct from individual components\n\
-        host = os.getenv("MYSQLHOST")\n\
-        port = os.getenv("MYSQLPORT")\n\
-        user = os.getenv("MYSQLUSER")\n\
-        password = os.getenv("MYSQLPASSWORD")\n\
-        database = os.getenv("MYSQLDATABASE")\n\
-        \n\
-        if not all([host, port, user, password, database]):\n\
-            logger.error("Missing required database configuration")\n\
-            return False\n\
-        \n\
-        db_url = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"\n\
-    \n\
-    logger.info("Using database URL: %s", db_url)\n\
     \n\
     while attempt < max_attempts:\n\
         try:\n\
-            logger.info("Attempting to connect to database (attempt %d/%d)", attempt + 1, max_attempts)\n\
-            engine = create_engine(\n\
-                db_url,\n\
-                connect_args={\n\
-                    "connect_timeout": 10,\n\
-                    "use_pure": True,\n\
-                    "auth_plugin": "mysql_native_password",\n\
-                    "password": os.getenv("MYSQLPASSWORD")\n\
-                }\n\
+            # Get connection details\n\
+            if os.getenv("MYSQL_URL"):\n\
+                # Parse MYSQL_URL\n\
+                url = os.getenv("MYSQL_URL")\n\
+                if url.startswith("mysql://"):\n\
+                    url = url.replace("mysql://", "mysql+mysqlconnector://")\n\
+                \n\
+                # Extract components from URL\n\
+                from urllib.parse import urlparse\n\
+                parsed = urlparse(url)\n\
+                host = parsed.hostname\n\
+                port = parsed.port or 3306\n\
+                user = parsed.username\n\
+                password = parsed.password\n\
+                database = parsed.path.lstrip("/")\n\
+            else:\n\
+                # Use individual environment variables\n\
+                host = os.getenv("MYSQLHOST")\n\
+                port = int(os.getenv("MYSQLPORT", "3306"))\n\
+                user = os.getenv("MYSQLUSER")\n\
+                password = os.getenv("MYSQLPASSWORD")\n\
+                database = os.getenv("MYSQLDATABASE")\n\
+            \n\
+            logger.info("Attempting to connect to database at %s:%s", host, port)\n\
+            \n\
+            # Try to connect\n\
+            conn = mysql.connector.connect(\n\
+                host=host,\n\
+                port=port,\n\
+                user=user,\n\
+                password=password,\n\
+                database=database,\n\
+                connect_timeout=10\n\
             )\n\
-            with engine.connect() as conn:\n\
-                conn.execute("SELECT 1")\n\
-            logger.info("Database connection successful!")\n\
-            return True\n\
+            \n\
+            if conn.is_connected():\n\
+                logger.info("Successfully connected to database")\n\
+                conn.close()\n\
+                return True\n\
+            \n\
         except Exception as e:\n\
             attempt += 1\n\
             logger.warning("Database connection attempt %d failed: %s", attempt, str(e))\n\
             if attempt < max_attempts:\n\
                 time.sleep(2)\n\
             else:\n\
-                logger.error("Max attempts reached. Could not connect to database.")\n\
+                logger.error("Failed to connect to database after %d attempts", max_attempts)\n\
                 return False\n\
+    \n\
+    return False\n\
 \n\
 if __name__ == "__main__":\n\
-    check_db()\n\
-' > check_db.py
+    logger.info("Validating environment variables...")\n\
+    if not validate_env():\n\
+        sys.exit(1)\n\
+    \n\
+    logger.info("Checking database connection...")\n\
+    if not check_db():\n\
+        sys.exit(1)\n\
+    \n\
+    logger.info("Database connection successful")\n\
+' > /app/check_db.py
 
-RUN chmod +x check_db.py
+# Make the script executable
+RUN chmod +x /app/check_db.py
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
-set -e\n\
 \n\
-echo "Validating environment variables..."\n\
-python validate_env.py\n\
+# Run database check\n\
+python /app/check_db.py\n\
+if [ $? -ne 0 ]; then\n\
+    echo "Database check failed"\n\
+    exit 1\n\
+fi\n\
 \n\
-echo "Waiting for database to be ready..."\n\
-python check_db.py\n\
-\n\
-echo "Running database migrations..."\n\
+# Run migrations\n\
 alembic upgrade head\n\
 \n\
-echo "Starting application..."\n\
-exec uvicorn main:app --host 0.0.0.0 --port $PORT\n\
-' > start.sh
+# Start the application\n\
+exec gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --log-level info\n\
+' > /app/start.sh
 
-RUN chmod +x start.sh
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
 
 # Expose the port
 EXPOSE $PORT
 
-# Start the application
-CMD ["./start.sh"] 
+# Run the startup script
+CMD ["/app/start.sh"] 

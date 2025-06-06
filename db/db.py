@@ -16,8 +16,13 @@ load_dotenv()
 
 def validate_env():
     """Validate that all required environment variables are set."""
+    # Check for either MYSQL_URL or individual components
+    if os.getenv("MYSQL_URL"):
+        logger.info("Using MYSQL_URL from environment")
+        return True
+        
+    # Check for individual components
     required_vars = [
-        "MYSQL_URL",
         "MYSQLHOST",
         "MYSQLPORT",
         "MYSQLUSER",
@@ -39,54 +44,28 @@ def validate_env():
 
 def get_database_url():
     """Get and validate the database URL."""
-    # Validate environment variables first
-    if not validate_env():
-        raise ValueError("Missing required environment variables")
-
-    # Try to get the internal MYSQL_URL first (for Railway deployment)
+    # Try to get the MYSQL_URL first
     DATABASE_URL = os.getenv("MYSQL_URL")
-    logger.info("Using MYSQL_URL from environment")
+    if DATABASE_URL:
+        logger.info("Using MYSQL_URL from environment")
+        return DATABASE_URL
     
     # If MYSQL_URL is not set, construct it from individual components
-    if not DATABASE_URL:
-        host = os.getenv("MYSQLHOST")
-        port = os.getenv("MYSQLPORT")
-        user = os.getenv("MYSQLUSER")
-        password = os.getenv("MYSQLPASSWORD")
-        database = os.getenv("MYSQLDATABASE")
-        
-        if not all([host, port, user, password, database]):
-            raise ValueError("Missing required database configuration")
-        
-        # URL encode the password to handle special characters
-        password = urllib.parse.quote_plus(password)
-        
-        DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
+    host = os.getenv("MYSQLHOST")
+    port = os.getenv("MYSQLPORT")
+    user = os.getenv("MYSQLUSER")
+    password = os.getenv("MYSQLPASSWORD")
+    database = os.getenv("MYSQLDATABASE")
     
-    logger.info("Database URL configured successfully")
-
-    try:
-        # Parse the DATABASE_URL to ensure it's in the correct format
-        if DATABASE_URL.startswith('mysql://'):
-            # Convert to SQLAlchemy format
-            parsed = urllib.parse.urlparse(DATABASE_URL)
-            
-            # Extract components
-            username = parsed.username or os.getenv("MYSQLUSER")
-            password = parsed.password or os.getenv("MYSQLPASSWORD")
-            # URL encode the password
-            password = urllib.parse.quote_plus(password)
-            hostname = parsed.hostname or os.getenv("MYSQLHOST")
-            port = parsed.port or os.getenv("MYSQLPORT")
-            database = parsed.path.lstrip('/') or os.getenv("MYSQLDATABASE")
-
-            # Construct the URL
-            sqlalchemy_url = f"mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database}"
-            logger.info("SQLAlchemy URL constructed successfully")
-            return sqlalchemy_url
-    except Exception as e:
-        logger.error("Error parsing DATABASE_URL: %s", str(e))
-        raise
+    if not all([host, port, user, password, database]):
+        raise ValueError("Missing required database configuration")
+    
+    # URL encode the password to handle special characters
+    password = urllib.parse.quote_plus(password)
+    
+    DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
+    logger.info("Database URL constructed from individual components")
+    return DATABASE_URL
 
 # Get the database URL
 try:
