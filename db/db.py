@@ -123,7 +123,7 @@ Base = declarative_base()
 
 def get_db():
     """Get database session with retry logic."""
-    max_retries = 10  # Reduced from 30 to 10 retries
+    max_retries = 5  # Reduced to 5 retries
     retry_delay = 1  # seconds
     
     for attempt in range(max_retries):

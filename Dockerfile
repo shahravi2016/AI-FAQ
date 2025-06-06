@@ -66,7 +66,7 @@ logging.basicConfig(level=logging.INFO)\n\
 logger = logging.getLogger(__name__)\n\
 \n\
 def check_db():\n\
-    max_attempts = 10  # Reduced from 30 to 10 attempts\n\
+    max_attempts = 5  # Reduced to 5 attempts\n\
     attempt = 0\n\
     \n\
     # Get database URL from environment\n\
