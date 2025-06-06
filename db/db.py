@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 import urllib.parse
 import logging
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -76,16 +78,19 @@ if '?' not in DATABASE_URL:
 logger.info("Creating database engine...")
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    pool_size=5,
-    max_overflow=10,
-    echo=True,  # Enable SQL query logging
+    pool_pre_ping=True,  # Enable connection health checks
+    pool_recycle=3600,   # Recycle connections after 1 hour
+    pool_size=5,         # Maintain a pool of 5 connections
+    max_overflow=10,     # Allow up to 10 additional connections
+    pool_timeout=30,     # Wait up to 30 seconds for a connection from the pool
+    echo=True,           # Enable SQL query logging
     connect_args={
         "connect_timeout": 10,  # 10 seconds timeout
-        "use_pure": True,  # Use pure Python implementation
+        "use_pure": True,       # Use pure Python implementation
         "auth_plugin": "mysql_native_password",  # Use native password authentication
-        "password": os.getenv("MYSQLPASSWORD", "")  # Explicitly pass password
+        "password": os.getenv("MYSQLPASSWORD", ""),  # Explicitly pass password
+        "autocommit": True,     # Enable autocommit
+        "charset": "utf8mb4"    # Use UTF-8 encoding
     }
 )
 
@@ -93,9 +98,22 @@ SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
 
 def get_db():
-    """Get database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    """Get database session with retry logic."""
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            db = SessionLocal()
+            # Test the connection
+            db.execute(text("SELECT 1"))
+            return db
+        except (OperationalError, SQLAlchemyError) as e:
+            logger.warning(f"Database connection attempt {attempt + 1} failed: {str(e)}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                continue
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error during database connection: {str(e)}")
+            raise
