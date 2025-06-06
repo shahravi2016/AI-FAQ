@@ -13,16 +13,23 @@ load_dotenv()
 
 def get_database_url():
     """Get and validate the database URL."""
-    # Try to get the full DATABASE_URL first
-    DATABASE_URL = os.getenv("DATABASE_URL")
+    # Try to get the internal MYSQL_URL first (for Railway deployment)
+    DATABASE_URL = os.getenv("MYSQL_URL")
     
-    # If DATABASE_URL is not set, construct it from individual components
+    # If MYSQL_URL is not set, try DATABASE_URL
     if not DATABASE_URL:
-        host = os.getenv("MYSQL_HOST", "caboose.proxy.rlwy.net")
-        port = os.getenv("MYSQL_PORT", "45163")
-        user = os.getenv("MYSQL_USER", "root")
-        password = os.getenv("MYSQL_PASSWORD", "")
-        database = os.getenv("MYSQL_DATABASE", "railway")
+        DATABASE_URL = os.getenv("DATABASE_URL")
+    
+    # If neither is set, construct it from individual components
+    if not DATABASE_URL:
+        host = os.getenv("MYSQLHOST", "mysql.railway.internal")
+        port = os.getenv("MYSQLPORT", "3306")
+        user = os.getenv("MYSQLUSER", "root")
+        password = os.getenv("MYSQLPASSWORD", "")
+        database = os.getenv("MYSQLDATABASE", "railway")
+        
+        # URL encode the password to handle special characters
+        password = urllib.parse.quote_plus(password)
         
         DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
     
@@ -31,18 +38,17 @@ def get_database_url():
     try:
         # Parse the DATABASE_URL to ensure it's in the correct format
         if DATABASE_URL.startswith('mysql://'):
-            # Already in correct format
-            return DATABASE_URL
-        else:
-            # Convert to SQLAlchemy format if needed
+            # Convert to SQLAlchemy format
             parsed = urllib.parse.urlparse(DATABASE_URL)
             
             # Extract components
-            username = parsed.username or os.getenv("MYSQL_USER", "root")
-            password = parsed.password or os.getenv("MYSQL_PASSWORD", "")
-            hostname = parsed.hostname or os.getenv("MYSQL_HOST", "caboose.proxy.rlwy.net")
-            port = parsed.port or os.getenv("MYSQL_PORT", "45163")
-            database = parsed.path.lstrip('/') or os.getenv("MYSQL_DATABASE", "railway")
+            username = parsed.username or os.getenv("MYSQLUSER", "root")
+            password = parsed.password or os.getenv("MYSQLPASSWORD", "")
+            # URL encode the password
+            password = urllib.parse.quote_plus(password)
+            hostname = parsed.hostname or os.getenv("MYSQLHOST", "mysql.railway.internal")
+            port = parsed.port or os.getenv("MYSQLPORT", "3306")
+            database = parsed.path.lstrip('/') or os.getenv("MYSQLDATABASE", "railway")
 
             # Construct the URL
             sqlalchemy_url = f"mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database}"
@@ -70,6 +76,7 @@ engine = create_engine(
     connect_args={
         "connect_timeout": 10,  # 10 seconds timeout
         "use_pure": True,  # Use pure Python implementation
+        "auth_plugin": "mysql_native_password"  # Use native password authentication
     }
 )
 
