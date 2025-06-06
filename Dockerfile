@@ -35,6 +35,12 @@ def validate_env():
     # Check for MYSQL_URL first
     if os.getenv("MYSQL_URL"):
         logger.info("Using MYSQL_URL from environment")
+        # Log the URL format (without password) for debugging
+        url = os.getenv("MYSQL_URL")
+        if url:
+            parsed = urlparse(url)
+            safe_url = f"mysql://{parsed.username}:***@{parsed.hostname}:{parsed.port or 3306}/{parsed.path.lstrip('/')}"
+            logger.info("MYSQL_URL format: %s", safe_url)
         return True
         
     # Check for Railway format variables
@@ -67,6 +73,13 @@ def parse_mysql_url(url):
     
     # URL decode the password to handle special characters
     password = unquote(parsed.password) if parsed.password else ""
+    
+    # Log parsed components (excluding password)
+    logger.info("Parsed URL components:")
+    logger.info("  Host: %s", parsed.hostname)
+    logger.info("  Port: %s", parsed.port or 3306)
+    logger.info("  User: %s", parsed.username)
+    logger.info("  Database: %s", parsed.path.lstrip("/"))
     
     return {
         "host": parsed.hostname,
@@ -104,6 +117,7 @@ def check_db():
                 }
                 logger.info("Using Railway format variables")
             
+            # Log connection attempt details (excluding password)
             logger.info("Attempting to connect to database at %s:%s as user %s", 
                        conn_params["host"], conn_params["port"], conn_params["user"])
             
