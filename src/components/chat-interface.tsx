@@ -201,7 +201,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       <div className="border border-meteor/50 rounded-lg shadow-lg overflow-hidden bg-meteor/30 backdrop-blur-sm relative">
         <div className="absolute -top-10 -left-10 w-20 h-20 bg-aurora/10 rounded-full blur-xl"></div>
         <div className="p-5">
-          <h3 className="text-xl font-medium mb-2 bg-gradient-to-r from-stellar to-cosmic bg-clip-text text-transparent">
+          {/* <h3 className="text-xl font-medium mb-2 bg-gradient-to-r from-stellar to-cosmic bg-clip-text text-transparent">
             How to Use This AI Assistant
           </h3>
           <p className="text-nebula mb-4">
@@ -228,7 +228,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
               </div>
               <p className="text-nebula">Click to play tutorial video</p>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-meteor/50 rounded-lg border border-meteor/70">
