@@ -30,18 +30,18 @@ logger = logging.getLogger(__name__)\n\
 \n\
 def validate_env():\n\
     """Validate that all required environment variables are set."""\n\
-    # Check for either MYSQL_URL or individual components\n\
-    if os.getenv("MYSQL_URL"):\n\
-        logger.info("Using MYSQL_URL from environment")\n\
+    # Check for either MYSQL_URL/DATABASE_URL or individual components\n\
+    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):\n\
+        logger.info("Using MYSQL_URL/DATABASE_URL from environment")\n\
         return True\n\
         \n\
     # Check for individual components\n\
     required_vars = [\n\
-        "MYSQLHOST",\n\
-        "MYSQLPORT",\n\
-        "MYSQLUSER",\n\
-        "MYSQLPASSWORD",\n\
-        "MYSQLDATABASE"\n\
+        "MYSQL_HOST",\n\
+        "MYSQL_PORT",\n\
+        "MYSQL_USER",\n\
+        "MYSQL_PASSWORD",\n\
+        "MYSQL_DATABASE"\n\
     ]\n\
     \n\
     missing_vars = []\n\
@@ -64,9 +64,9 @@ def check_db():\n\
     while attempt < max_attempts:\n\
         try:\n\
             # Get connection details\n\
-            if os.getenv("MYSQL_URL"):\n\
-                # Parse MYSQL_URL\n\
-                url = os.getenv("MYSQL_URL")\n\
+            if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):\n\
+                # Parse MYSQL_URL/DATABASE_URL\n\
+                url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")\n\
                 if url.startswith("mysql://"):\n\
                     url = url.replace("mysql://", "mysql+mysqlconnector://")\n\
                 \n\
@@ -80,11 +80,11 @@ def check_db():\n\
                 database = parsed.path.lstrip("/")\n\
             else:\n\
                 # Use individual environment variables\n\
-                host = os.getenv("MYSQLHOST")\n\
-                port = int(os.getenv("MYSQLPORT", "3306"))\n\
-                user = os.getenv("MYSQLUSER")\n\
-                password = os.getenv("MYSQLPASSWORD")\n\
-                database = os.getenv("MYSQLDATABASE")\n\
+                host = os.getenv("MYSQL_HOST")\n\
+                port = int(os.getenv("MYSQL_PORT", "3306"))\n\
+                user = os.getenv("MYSQL_USER")\n\
+                password = os.getenv("MYSQL_PASSWORD")\n\
+                database = os.getenv("MYSQL_DATABASE")\n\
             \n\
             logger.info("Attempting to connect to database at %s:%s", host, port)\n\
             \n\

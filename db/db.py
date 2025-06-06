@@ -16,18 +16,18 @@ load_dotenv()
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for either MYSQL_URL or individual components
-    if os.getenv("MYSQL_URL"):
-        logger.info("Using MYSQL_URL from environment")
+    # Check for either MYSQL_URL/DATABASE_URL or individual components
+    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):
+        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
         return True
         
     # Check for individual components
     required_vars = [
-        "MYSQLHOST",
-        "MYSQLPORT",
-        "MYSQLUSER",
-        "MYSQLPASSWORD",
-        "MYSQLDATABASE"
+        "MYSQL_HOST",
+        "MYSQL_PORT",
+        "MYSQL_USER",
+        "MYSQL_PASSWORD",
+        "MYSQL_DATABASE"
     ]
     
     missing_vars = []
@@ -44,18 +44,18 @@ def validate_env():
 
 def get_database_url():
     """Get and validate the database URL."""
-    # Try to get the MYSQL_URL first
-    DATABASE_URL = os.getenv("MYSQL_URL")
+    # Try to get the MYSQL_URL or DATABASE_URL first
+    DATABASE_URL = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
     if DATABASE_URL:
-        logger.info("Using MYSQL_URL from environment")
+        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
         return DATABASE_URL
     
-    # If MYSQL_URL is not set, construct it from individual components
-    host = os.getenv("MYSQLHOST")
-    port = os.getenv("MYSQLPORT")
-    user = os.getenv("MYSQLUSER")
-    password = os.getenv("MYSQLPASSWORD")
-    database = os.getenv("MYSQLDATABASE")
+    # If MYSQL_URL/DATABASE_URL is not set, construct it from individual components
+    host = os.getenv("MYSQL_HOST")
+    port = os.getenv("MYSQL_PORT")
+    user = os.getenv("MYSQL_USER")
+    password = os.getenv("MYSQL_PASSWORD")
+    database = os.getenv("MYSQL_DATABASE")
     
     if not all([host, port, user, password, database]):
         raise ValueError("Missing required database configuration")
@@ -91,7 +91,7 @@ engine = create_engine(
         "connect_timeout": 10,  # 10 seconds timeout
         "use_pure": True,       # Use pure Python implementation
         "auth_plugin": "mysql_native_password",  # Use native password authentication
-        "password": os.getenv("MYSQLPASSWORD"),  # Explicitly pass password
+        "password": os.getenv("MYSQL_PASSWORD"),  # Explicitly pass password
         "autocommit": True,     # Enable autocommit
         "charset": "utf8mb4"    # Use UTF-8 encoding
     }
