@@ -31,17 +31,18 @@ logger = logging.getLogger(__name__)
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for either MYSQL_URL/DATABASE_URL or individual components
-    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):
-        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
+    # Check for MYSQL_URL first
+    if os.getenv("MYSQL_URL"):
+        logger.info("Using MYSQL_URL from environment")
         return True
-    # Check for individual components
+        
+    # Check for Railway format variables
     required_vars = [
-        "MYSQL_HOST",
-        "MYSQL_PORT",
-        "MYSQL_USER",
-        "MYSQL_PASSWORD",
-        "MYSQL_DATABASE"
+        "MYSQLHOST",
+        "MYSQLPORT",
+        "MYSQLUSER",
+        "MYSQLPASSWORD",
+        "MYSQLDATABASE"
     ]
     
     missing_vars = []
@@ -84,22 +85,13 @@ def check_db():
                     logger.error("Invalid MYSQL_URL format. Must start with mysql://")
                     return False
             else:
-                # Try Railway format first
-                if all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"]):
-                    host = os.getenv("MYSQLHOST")
-                    port = int(os.getenv("MYSQLPORT", "3306"))
-                    user = os.getenv("MYSQLUSER")
-                    password = os.getenv("MYSQLPASSWORD")
-                    database = os.getenv("MYSQLDATABASE")
-                    logger.info("Using Railway format environment variables")
-                else:
-                    # Fall back to standard format
-                    host = os.getenv("MYSQL_HOST")
-                    port = int(os.getenv("MYSQL_PORT", "3306"))
-                    user = os.getenv("MYSQL_USER")
-                    password = os.getenv("MYSQL_PASSWORD")
-                    database = os.getenv("MYSQL_DATABASE")
-                    logger.info("Using standard format environment variables")
+                # Use Railway format variables
+                host = os.getenv("MYSQLHOST")
+                port = int(os.getenv("MYSQLPORT", "3306"))
+                user = os.getenv("MYSQLUSER")
+                password = os.getenv("MYSQLPASSWORD")
+                database = os.getenv("MYSQLDATABASE")
+                logger.info("Using Railway format variables")
             
             logger.info("Attempting to connect to database at %s:%s as user %s", host, port, user)
             

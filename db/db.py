@@ -16,36 +16,26 @@ load_dotenv()
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for either MYSQL_URL or individual components
+    # Check for MYSQL_URL first
     if os.getenv("MYSQL_URL"):
         logger.info("Using MYSQL_URL from environment")
         return True
         
-    # Check for individual components (both formats)
+    # Check for Railway format variables
     required_vars = [
-        # Railway format
         "MYSQLHOST",
         "MYSQLPORT",
         "MYSQLUSER",
         "MYSQLPASSWORD",
-        "MYSQLDATABASE",
-        # Standard format
-        "MYSQL_HOST",
-        "MYSQL_PORT",
-        "MYSQL_USER",
-        "MYSQL_PASSWORD",
-        "MYSQL_DATABASE"
+        "MYSQLDATABASE"
     ]
     
-    # Check if we have either format complete
-    railway_format = all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"])
-    standard_format = all(os.getenv(var) for var in ["MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD", "MYSQL_DATABASE"])
+    missing_vars = []
+    for var in required_vars:
+        if not os.getenv(var):
+            missing_vars.append(var)
     
-    if not (railway_format or standard_format):
-        missing_vars = []
-        for var in required_vars:
-            if not os.getenv(var):
-                missing_vars.append(var)
+    if missing_vars:
         logger.error("Missing required environment variables: %s", ", ".join(missing_vars))
         return False
     
@@ -79,22 +69,12 @@ def get_database_url():
             return sqlalchemy_url
         return DATABASE_URL
     
-    # If MYSQL_URL is not set, try Railway format first
-    if all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"]):
-        host = os.getenv("MYSQLHOST")
-        port = os.getenv("MYSQLPORT")
-        user = os.getenv("MYSQLUSER")
-        password = os.getenv("MYSQLPASSWORD")
-        database = os.getenv("MYSQLDATABASE")
-        logger.info("Using Railway format environment variables")
-    else:
-        # Fall back to standard format
-        host = os.getenv("MYSQL_HOST")
-        port = os.getenv("MYSQL_PORT")
-        user = os.getenv("MYSQL_USER")
-        password = os.getenv("MYSQL_PASSWORD")
-        database = os.getenv("MYSQL_DATABASE")
-        logger.info("Using standard format environment variables")
+    # If MYSQL_URL is not set, use Railway format variables
+    host = os.getenv("MYSQLHOST")
+    port = os.getenv("MYSQLPORT")
+    user = os.getenv("MYSQLUSER")
+    password = os.getenv("MYSQLPASSWORD")
+    database = os.getenv("MYSQLDATABASE")
     
     if not all([host, port, user, password, database]):
         raise ValueError("Missing required database configuration")
@@ -103,7 +83,7 @@ def get_database_url():
     password = urllib.parse.quote_plus(password)
     
     DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
-    logger.info("Database URL constructed from individual components")
+    logger.info("Database URL constructed from Railway variables")
     return DATABASE_URL
 
 # Get the database URL
