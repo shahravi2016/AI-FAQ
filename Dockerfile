@@ -84,7 +84,7 @@ def parse_mysql_url(url):
     return {
         "host": parsed.hostname,
         "port": parsed.port or 3306,
-        "user": parsed.username,
+        "user": "root",  # Force using root user
         "password": password,
         "database": parsed.path.lstrip("/")
     }
@@ -111,7 +111,7 @@ def check_db():
                 conn_params = {
                     "host": os.getenv("MYSQLHOST"),
                     "port": int(os.getenv("MYSQLPORT", "3306")),
-                    "user": os.getenv("MYSQLUSER"),
+                    "user": "root",  # Force using root user
                     "password": os.getenv("MYSQLPASSWORD"),
                     "database": os.getenv("MYSQLDATABASE")
                 }
