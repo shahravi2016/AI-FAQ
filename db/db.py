@@ -16,13 +16,20 @@ load_dotenv()
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for either MYSQL_URL/DATABASE_URL or individual components
-    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):
-        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
+    # Check for either MYSQL_URL or individual components
+    if os.getenv("MYSQL_URL"):
+        logger.info("Using MYSQL_URL from environment")
         return True
         
-    # Check for individual components
+    # Check for individual components (both formats)
     required_vars = [
+        # Railway format
+        "MYSQLHOST",
+        "MYSQLPORT",
+        "MYSQLUSER",
+        "MYSQLPASSWORD",
+        "MYSQLDATABASE",
+        # Standard format
         "MYSQL_HOST",
         "MYSQL_PORT",
         "MYSQL_USER",
@@ -30,12 +37,15 @@ def validate_env():
         "MYSQL_DATABASE"
     ]
     
-    missing_vars = []
-    for var in required_vars:
-        if not os.getenv(var):
-            missing_vars.append(var)
+    # Check if we have either format complete
+    railway_format = all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"])
+    standard_format = all(os.getenv(var) for var in ["MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD", "MYSQL_DATABASE"])
     
-    if missing_vars:
+    if not (railway_format or standard_format):
+        missing_vars = []
+        for var in required_vars:
+            if not os.getenv(var):
+                missing_vars.append(var)
         logger.error("Missing required environment variables: %s", ", ".join(missing_vars))
         return False
     
@@ -44,18 +54,47 @@ def validate_env():
 
 def get_database_url():
     """Get and validate the database URL."""
-    # Try to get the MYSQL_URL or DATABASE_URL first
-    DATABASE_URL = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
+    # Try to get the MYSQL_URL first
+    DATABASE_URL = os.getenv("MYSQL_URL")
     if DATABASE_URL:
-        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
+        logger.info("Using MYSQL_URL from environment")
+        # Parse the URL to ensure it's in the correct format
+        if DATABASE_URL.startswith('mysql://'):
+            # Convert to SQLAlchemy format
+            parsed = urllib.parse.urlparse(DATABASE_URL)
+            
+            # Extract components
+            username = parsed.username
+            password = parsed.password
+            hostname = parsed.hostname
+            port = parsed.port or 3306
+            database = parsed.path.lstrip('/')
+            
+            # URL encode the password
+            password = urllib.parse.quote_plus(password)
+            
+            # Construct the URL
+            sqlalchemy_url = f"mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database}"
+            logger.info("SQLAlchemy URL constructed successfully")
+            return sqlalchemy_url
         return DATABASE_URL
     
-    # If MYSQL_URL/DATABASE_URL is not set, construct it from individual components
-    host = os.getenv("MYSQL_HOST")
-    port = os.getenv("MYSQL_PORT")
-    user = os.getenv("MYSQL_USER")
-    password = os.getenv("MYSQL_PASSWORD")
-    database = os.getenv("MYSQL_DATABASE")
+    # If MYSQL_URL is not set, try Railway format first
+    if all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"]):
+        host = os.getenv("MYSQLHOST")
+        port = os.getenv("MYSQLPORT")
+        user = os.getenv("MYSQLUSER")
+        password = os.getenv("MYSQLPASSWORD")
+        database = os.getenv("MYSQLDATABASE")
+        logger.info("Using Railway format environment variables")
+    else:
+        # Fall back to standard format
+        host = os.getenv("MYSQL_HOST")
+        port = os.getenv("MYSQL_PORT")
+        user = os.getenv("MYSQL_USER")
+        password = os.getenv("MYSQL_PASSWORD")
+        database = os.getenv("MYSQL_DATABASE")
+        logger.info("Using standard format environment variables")
     
     if not all([host, port, user, password, database]):
         raise ValueError("Missing required database configuration")
@@ -70,6 +109,7 @@ def get_database_url():
 # Get the database URL
 try:
     DATABASE_URL = get_database_url()
+    logger.info("Database URL configured successfully")
 except Exception as e:
     logger.error("Failed to configure database URL: %s", str(e))
     sys.exit(1)
@@ -91,7 +131,6 @@ engine = create_engine(
         "connect_timeout": 10,  # 10 seconds timeout
         "use_pure": True,       # Use pure Python implementation
         "auth_plugin": "mysql_native_password",  # Use native password authentication
-        "password": os.getenv("MYSQL_PASSWORD"),  # Explicitly pass password
         "autocommit": True,     # Enable autocommit
         "charset": "utf8mb4"    # Use UTF-8 encoding
     }

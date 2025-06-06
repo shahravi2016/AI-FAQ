@@ -17,114 +17,130 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create a script to check database connection
-RUN echo '#!/usr/bin/env python3\n\
-import os\n\
-import time\n\
-import mysql.connector\n\
-import logging\n\
-import sys\n\
-\n\
-# Configure logging\n\
-logging.basicConfig(level=logging.INFO)\n\
-logger = logging.getLogger(__name__)\n\
-\n\
-def validate_env():\n\
-    """Validate that all required environment variables are set."""\n\
-    # Check for either MYSQL_URL/DATABASE_URL or individual components\n\
-    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):\n\
-        logger.info("Using MYSQL_URL/DATABASE_URL from environment")\n\
-        return True\n\
-        \n\
-    # Check for individual components\n\
-    required_vars = [\n\
-        "MYSQL_HOST",\n\
-        "MYSQL_PORT",\n\
-        "MYSQL_USER",\n\
-        "MYSQL_PASSWORD",\n\
-        "MYSQL_DATABASE"\n\
-    ]\n\
-    \n\
-    missing_vars = []\n\
-    for var in required_vars:\n\
-        if not os.getenv(var):\n\
-            missing_vars.append(var)\n\
-    \n\
-    if missing_vars:\n\
-        logger.error("Missing required environment variables: %s", ", ".join(missing_vars))\n\
-        return False\n\
-    \n\
-    logger.info("All required environment variables are set")\n\
-    return True\n\
-\n\
-def check_db():\n\
-    """Check database connection with retry logic."""\n\
-    max_attempts = 5  # Reduced to 5 retries\n\
-    attempt = 0\n\
-    \n\
-    while attempt < max_attempts:\n\
-        try:\n\
-            # Get connection details\n\
-            if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):\n\
-                # Parse MYSQL_URL/DATABASE_URL\n\
-                url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")\n\
-                if url.startswith("mysql://"):\n\
-                    url = url.replace("mysql://", "mysql+mysqlconnector://")\n\
-                \n\
-                # Extract components from URL\n\
-                from urllib.parse import urlparse\n\
-                parsed = urlparse(url)\n\
-                host = parsed.hostname\n\
-                port = parsed.port or 3306\n\
-                user = parsed.username\n\
-                password = parsed.password\n\
-                database = parsed.path.lstrip("/")\n\
-            else:\n\
-                # Use individual environment variables\n\
-                host = os.getenv("MYSQL_HOST")\n\
-                port = int(os.getenv("MYSQL_PORT", "3306"))\n\
-                user = os.getenv("MYSQL_USER")\n\
-                password = os.getenv("MYSQL_PASSWORD")\n\
-                database = os.getenv("MYSQL_DATABASE")\n\
-            \n\
-            logger.info("Attempting to connect to database at %s:%s", host, port)\n\
-            \n\
-            # Try to connect\n\
-            conn = mysql.connector.connect(\n\
-                host=host,\n\
-                port=port,\n\
-                user=user,\n\
-                password=password,\n\
-                database=database,\n\
-                connect_timeout=10\n\
-            )\n\
-            \n\
-            if conn.is_connected():\n\
-                logger.info("Successfully connected to database")\n\
-                conn.close()\n\
-                return True\n\
-            \n\
-        except Exception as e:\n\
-            attempt += 1\n\
-            logger.warning("Database connection attempt %d failed: %s", attempt, str(e))\n\
-            if attempt < max_attempts:\n\
-                time.sleep(2)\n\
-            else:\n\
-                logger.error("Failed to connect to database after %d attempts", max_attempts)\n\
-                return False\n\
-    \n\
-    return False\n\
-\n\
-if __name__ == "__main__":\n\
-    logger.info("Validating environment variables...")\n\
-    if not validate_env():\n\
-        sys.exit(1)\n\
-    \n\
-    logger.info("Checking database connection...")\n\
-    if not check_db():\n\
-        sys.exit(1)\n\
-    \n\
-    logger.info("Database connection successful")\n\
-' > /app/check_db.py
+COPY <<'EOF' /app/check_db.py
+#!/usr/bin/env python3
+import os
+import time
+import mysql.connector
+import logging
+import sys
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def validate_env():
+    """Validate that all required environment variables are set."""
+    # Check for either MYSQL_URL/DATABASE_URL or individual components
+    if os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL"):
+        logger.info("Using MYSQL_URL/DATABASE_URL from environment")
+        return True
+    # Check for individual components
+    required_vars = [
+        "MYSQL_HOST",
+        "MYSQL_PORT",
+        "MYSQL_USER",
+        "MYSQL_PASSWORD",
+        "MYSQL_DATABASE"
+    ]
+    
+    missing_vars = []
+    for var in required_vars:
+        if not os.getenv(var):
+            missing_vars.append(var)
+    
+    if missing_vars:
+        logger.error("Missing required environment variables: %s", ", ".join(missing_vars))
+        return False
+    
+    logger.info("All required environment variables are set")
+    return True
+
+def check_db():
+    """Check database connection with retry logic."""
+    max_attempts = 5  # Reduced to 5 retries
+    attempt = 0
+    
+    while attempt < max_attempts:
+        try:
+            # Get connection details
+            if os.getenv("MYSQL_URL"):
+                # Parse MYSQL_URL
+                url = os.getenv("MYSQL_URL")
+                if url.startswith("mysql://"):
+                    # Parse the URL
+                    from urllib.parse import urlparse
+                    parsed = urlparse(url)
+                    
+                    # Extract components
+                    host = parsed.hostname
+                    port = parsed.port or 3306
+                    user = parsed.username
+                    password = parsed.password
+                    database = parsed.path.lstrip("/")
+                    
+                    logger.info("Using credentials from MYSQL_URL")
+                else:
+                    logger.error("Invalid MYSQL_URL format. Must start with mysql://")
+                    return False
+            else:
+                # Try Railway format first
+                if all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"]):
+                    host = os.getenv("MYSQLHOST")
+                    port = int(os.getenv("MYSQLPORT", "3306"))
+                    user = os.getenv("MYSQLUSER")
+                    password = os.getenv("MYSQLPASSWORD")
+                    database = os.getenv("MYSQLDATABASE")
+                    logger.info("Using Railway format environment variables")
+                else:
+                    # Fall back to standard format
+                    host = os.getenv("MYSQL_HOST")
+                    port = int(os.getenv("MYSQL_PORT", "3306"))
+                    user = os.getenv("MYSQL_USER")
+                    password = os.getenv("MYSQL_PASSWORD")
+                    database = os.getenv("MYSQL_DATABASE")
+                    logger.info("Using standard format environment variables")
+            
+            logger.info("Attempting to connect to database at %s:%s as user %s", host, port, user)
+            
+            # Try to connect
+            conn = mysql.connector.connect(
+                host=host,
+                port=port,
+                user=user,
+                password=password,
+                database=database,
+                connect_timeout=10,
+                auth_plugin='mysql_native_password'
+            )
+            
+            if conn.is_connected():
+                logger.info("Successfully connected to database")
+                conn.close()
+                return True
+            
+        except Exception as e:
+            attempt += 1
+            logger.warning("Database connection attempt %d failed: %s", attempt, str(e))
+            if attempt < max_attempts:
+                time.sleep(2)
+            else:
+                logger.error("Failed to connect to database after %d attempts", max_attempts)
+                return False
+    
+    return False
+
+if __name__ == "__main__":
+    logger.info("Validating environment variables...")
+    if not validate_env():
+        sys.exit(1)
+    
+    logger.info("Checking database connection...")
+    if not check_db():
+        sys.exit(1)
+    
+    logger.info("Database connection successful")
+EOF
 
 # Make the script executable
 RUN chmod +x /app/check_db.py
