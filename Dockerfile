@@ -24,6 +24,7 @@ import time
 import mysql.connector
 import logging
 import sys
+from urllib.parse import urlparse, unquote
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +58,24 @@ def validate_env():
     logger.info("All required environment variables are set")
     return True
 
+def parse_mysql_url(url):
+    """Parse MySQL URL and return connection parameters."""
+    if not url.startswith("mysql://"):
+        raise ValueError("Invalid MYSQL_URL format. Must start with mysql://")
+    
+    parsed = urlparse(url)
+    
+    # URL decode the password to handle special characters
+    password = unquote(parsed.password) if parsed.password else ""
+    
+    return {
+        "host": parsed.hostname,
+        "port": parsed.port or 3306,
+        "user": parsed.username,
+        "password": password,
+        "database": parsed.path.lstrip("/")
+    }
+
 def check_db():
     """Check database connection with retry logic."""
     max_attempts = 5  # Reduced to 5 retries
@@ -68,40 +87,29 @@ def check_db():
             if os.getenv("MYSQL_URL"):
                 # Parse MYSQL_URL
                 url = os.getenv("MYSQL_URL")
-                if url.startswith("mysql://"):
-                    # Parse the URL
-                    from urllib.parse import urlparse
-                    parsed = urlparse(url)
-                    
-                    # Extract components
-                    host = parsed.hostname
-                    port = parsed.port or 3306
-                    user = parsed.username
-                    password = parsed.password
-                    database = parsed.path.lstrip("/")
-                    
-                    logger.info("Using credentials from MYSQL_URL")
-                else:
-                    logger.error("Invalid MYSQL_URL format. Must start with mysql://")
+                try:
+                    conn_params = parse_mysql_url(url)
+                    logger.info("Successfully parsed MYSQL_URL")
+                except ValueError as e:
+                    logger.error("Failed to parse MYSQL_URL: %s", str(e))
                     return False
             else:
                 # Use Railway format variables
-                host = os.getenv("MYSQLHOST")
-                port = int(os.getenv("MYSQLPORT", "3306"))
-                user = os.getenv("MYSQLUSER")
-                password = os.getenv("MYSQLPASSWORD")
-                database = os.getenv("MYSQLDATABASE")
+                conn_params = {
+                    "host": os.getenv("MYSQLHOST"),
+                    "port": int(os.getenv("MYSQLPORT", "3306")),
+                    "user": os.getenv("MYSQLUSER"),
+                    "password": os.getenv("MYSQLPASSWORD"),
+                    "database": os.getenv("MYSQLDATABASE")
+                }
                 logger.info("Using Railway format variables")
             
-            logger.info("Attempting to connect to database at %s:%s as user %s", host, port, user)
+            logger.info("Attempting to connect to database at %s:%s as user %s", 
+                       conn_params["host"], conn_params["port"], conn_params["user"])
             
             # Try to connect
             conn = mysql.connector.connect(
-                host=host,
-                port=port,
-                user=user,
-                password=password,
-                database=database,
+                **conn_params,
                 connect_timeout=10,
                 auth_plugin='mysql_native_password'
             )
