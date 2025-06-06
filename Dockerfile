@@ -34,6 +34,8 @@ def check_db():\n\
         try:\n\
             # Get database URL from environment\n\
             db_url = os.getenv("MYSQL_URL")\n\
+            logger.info("MYSQL_URL from env: %s", db_url)\n\
+            \n\
             if not db_url:\n\
                 # Construct from individual components\n\
                 host = os.getenv("MYSQLHOST", "mysql.railway.internal")\n\
@@ -41,17 +43,32 @@ def check_db():\n\
                 user = os.getenv("MYSQLUSER", "root")\n\
                 password = os.getenv("MYSQLPASSWORD", "")\n\
                 database = os.getenv("MYSQLDATABASE", "railway")\n\
+                \n\
+                logger.info("Constructing URL from components:")\n\
+                logger.info("Host: %s", host)\n\
+                logger.info("Port: %s", port)\n\
+                logger.info("User: %s", user)\n\
+                logger.info("Database: %s", database)\n\
+                \n\
                 db_url = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"\n\
             \n\
-            logger.info(f"Attempting to connect to database (attempt {attempt + 1}/{max_attempts})")\n\
-            engine = create_engine(db_url)\n\
+            logger.info("Attempting to connect to database (attempt %d/%d)", attempt + 1, max_attempts)\n\
+            engine = create_engine(\n\
+                db_url,\n\
+                connect_args={\n\
+                    "connect_timeout": 10,\n\
+                    "use_pure": True,\n\
+                    "auth_plugin": "mysql_native_password",\n\
+                    "password": os.getenv("MYSQLPASSWORD", "")\n\
+                }\n\
+            )\n\
             with engine.connect() as conn:\n\
                 conn.execute("SELECT 1")\n\
             logger.info("Database connection successful!")\n\
             return True\n\
         except Exception as e:\n\
             attempt += 1\n\
-            logger.warning(f"Database connection attempt {attempt} failed: {str(e)}")\n\
+            logger.warning("Database connection attempt %d failed: %s", attempt, str(e))\n\
             if attempt < max_attempts:\n\
                 time.sleep(2)\n\
             else:\n\

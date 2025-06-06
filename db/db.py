@@ -15,10 +15,12 @@ def get_database_url():
     """Get and validate the database URL."""
     # Try to get the internal MYSQL_URL first (for Railway deployment)
     DATABASE_URL = os.getenv("MYSQL_URL")
+    logger.info("MYSQL_URL from env: %s", DATABASE_URL)
     
     # If MYSQL_URL is not set, try DATABASE_URL
     if not DATABASE_URL:
         DATABASE_URL = os.getenv("DATABASE_URL")
+        logger.info("DATABASE_URL from env: %s", DATABASE_URL)
     
     # If neither is set, construct it from individual components
     if not DATABASE_URL:
@@ -28,12 +30,18 @@ def get_database_url():
         password = os.getenv("MYSQLPASSWORD", "")
         database = os.getenv("MYSQLDATABASE", "railway")
         
+        logger.info("Constructing URL from components:")
+        logger.info("Host: %s", host)
+        logger.info("Port: %s", port)
+        logger.info("User: %s", user)
+        logger.info("Database: %s", database)
+        
         # URL encode the password to handle special characters
         password = urllib.parse.quote_plus(password)
         
         DATABASE_URL = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
     
-    logger.info(f"Using database URL: {DATABASE_URL}")
+    logger.info("Final DATABASE_URL: %s", DATABASE_URL)
 
     try:
         # Parse the DATABASE_URL to ensure it's in the correct format
@@ -52,10 +60,10 @@ def get_database_url():
 
             # Construct the URL
             sqlalchemy_url = f"mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database}"
-            logger.info(f"Constructed SQLAlchemy URL: {sqlalchemy_url}")
+            logger.info("Constructed SQLAlchemy URL: %s", sqlalchemy_url)
             return sqlalchemy_url
     except Exception as e:
-        logger.error(f"Error parsing DATABASE_URL: {str(e)}")
+        logger.error("Error parsing DATABASE_URL: %s", str(e))
         raise
 
 # Get the database URL
@@ -76,7 +84,8 @@ engine = create_engine(
     connect_args={
         "connect_timeout": 10,  # 10 seconds timeout
         "use_pure": True,  # Use pure Python implementation
-        "auth_plugin": "mysql_native_password"  # Use native password authentication
+        "auth_plugin": "mysql_native_password",  # Use native password authentication
+        "password": os.getenv("MYSQLPASSWORD", "")  # Explicitly pass password
     }
 )
 
