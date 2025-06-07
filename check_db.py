@@ -12,18 +12,7 @@ logger = logging.getLogger(__name__)
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Checking for MYSQL_URL
-    if os.getenv("MYSQL_URL"):
-        logger.info("Using MYSQL_URL from environment")
-        # Log the URL format (without password) for debugging
-        url = os.getenv("MYSQL_URL")
-        if url:
-            parsed = urlparse(url)
-            safe_url = f"mysql://{parsed.username}:***@{parsed.hostname}:{parsed.port or 3306}/{parsed.path.lstrip('/')}"
-            logger.info("MYSQL_URL format: %s", safe_url)
-        return True
-        
-    # Check for Railway format variables
+    # First check for Railway format variables
     required_vars = [
         "MYSQLHOST",
         "MYSQLPORT",
@@ -37,37 +26,62 @@ def validate_env():
         if not os.getenv(var):
             missing_vars.append(var)
     
-    if missing_vars:
-        logger.error("Missing required environment variables: %s", ", ".join(missing_vars))
-        return False
+    if not missing_vars:
+        logger.info("All Railway environment variables are set")
+        return True
+        
+    # If Railway variables are not set, check for MYSQL_URL
+    if os.getenv("MYSQL_URL"):
+        logger.info("Using MYSQL_URL from environment")
+        # Log the URL format (without password) for debugging
+        url = os.getenv("MYSQL_URL")
+        if url:
+            parsed = urlparse(url)
+            safe_url = f"mysql://{parsed.username}:***@{parsed.hostname}:{parsed.port or 3306}/{parsed.path.lstrip('/')}"
+            logger.info("MYSQL_URL format: %s", safe_url)
+        return True
     
-    logger.info("All required environment variables are set")
-    return True
+    logger.error("Missing required environment variables: %s", ", ".join(missing_vars))
+    return False
 
-def parse_mysql_url(url):
-    """Parse MySQL URL and return connection parameters."""
-    if not url.startswith("mysql://"):
-        raise ValueError("Invalid MYSQL_URL format. Must start with mysql://")
+def get_connection_params():
+    """Get database connection parameters from environment variables."""
+    # First try Railway format variables
+    if all(os.getenv(var) for var in ["MYSQLHOST", "MYSQLPORT", "MYSQLUSER", "MYSQLPASSWORD", "MYSQLDATABASE"]):
+        logger.info("Using Railway format variables")
+        return {
+            "host": os.getenv("MYSQLHOST"),
+            "port": int(os.getenv("MYSQLPORT", "3306")),
+            "user": os.getenv("MYSQLUSER"),
+            "password": os.getenv("MYSQLPASSWORD"),
+            "database": os.getenv("MYSQLDATABASE")
+        }
     
-    parsed = urlparse(url)
+    # Fallback to MYSQL_URL
+    if os.getenv("MYSQL_URL"):
+        url = os.getenv("MYSQL_URL")
+        if not url.startswith("mysql://"):
+            raise ValueError("Invalid MYSQL_URL format. Must start with mysql://")
+        
+        parsed = urlparse(url)
+        password = parsed.password if parsed.password else ""
+        
+        # Log parsed components (excluding password)
+        logger.info("Parsed URL components:")
+        logger.info("  Host: %s", parsed.hostname)
+        logger.info("  Port: %s", parsed.port or 3306)
+        logger.info("  User: %s", parsed.username)
+        logger.info("  Database: %s", parsed.path.lstrip("/"))
+        
+        return {
+            "host": parsed.hostname,
+            "port": parsed.port or 3306,
+            "user": parsed.username,
+            "password": password,
+            "database": parsed.path.lstrip("/")
+        }
     
-    # Use password as-is without any decoding
-    password = parsed.password if parsed.password else ""
-    
-    # Log parsed components (excluding password)
-    logger.info("Parsed URL components:")
-    logger.info("  Host: %s", parsed.hostname)
-    logger.info("  Port: %s", parsed.port or 3306)
-    logger.info("  User: %s", parsed.username)
-    logger.info("  Database: %s", parsed.path.lstrip("/"))
-    
-    return {
-        "host": parsed.hostname,
-        "port": parsed.port or 3306,
-        "user": parsed.username,
-        "password": password,
-        "database": parsed.path.lstrip("/")
-    }
+    raise ValueError("No valid database connection parameters found")
 
 def try_connect(conn_params):
     """Try to connect to the database with the given parameters."""
@@ -92,32 +106,15 @@ def try_connect(conn_params):
 
 def check_db():
     """Check database connection with retry logic."""
-    max_attempts = 5  # Reduced to 5 retries
+    max_attempts = 5
     attempt = 0
     
     while attempt < max_attempts:
         try:
-            # Get connection details
-            if os.getenv("MYSQL_URL"):
-                # Parse MYSQL_URL
-                url = os.getenv("MYSQL_URL")
-                try:
-                    conn_params = parse_mysql_url(url)
-                    logger.info("Successfully parsed MYSQL_URL")
-                except ValueError as e:
-                    logger.error("Failed to parse MYSQL_URL: %s", str(e))
-                    return False
-            else:
-                conn_params = {
-                    "host": os.getenv("MYSQLHOST"),
-                    "port": int(os.getenv("MYSQLPORT", "3306")),
-                    "user": os.getenv("MYSQLUSER"),
-                    "password": os.getenv("MYSQLPASSWORD"),
-                    "database": os.getenv("MYSQLDATABASE")
-                }
-                logger.info("Using Railway format variables")
+            # Get connection parameters
+            conn_params = get_connection_params()
             
-            # Trying TCP connection
+            # Try TCP connection
             if try_connect(conn_params):
                 return True
             
