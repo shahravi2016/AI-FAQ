@@ -21,6 +21,12 @@ def validate_env():
         "MYSQLDATABASE"
     ]
     
+    # Log all environment variables (excluding passwords)
+    logger.info("Environment variables:")
+    for var in required_vars:
+        if var != "MYSQLPASSWORD":
+            logger.info("  %s: %s", var, os.getenv(var))
+    
     missing_vars = []
     for var in required_vars:
         if not os.getenv(var):
@@ -52,7 +58,7 @@ def get_connection_params():
         return {
             "host": os.getenv("MYSQLHOST"),
             "port": int(os.getenv("MYSQLPORT", "3306")),
-            "user": os.getenv("MYSQLUSER"),
+            "user": os.getenv("MYSQLUSER"),  # Use MYSQLUSER as is
             "password": os.getenv("MYSQLPASSWORD"),
             "database": os.getenv("MYSQLDATABASE")
         }
@@ -76,7 +82,7 @@ def get_connection_params():
         return {
             "host": parsed.hostname,
             "port": parsed.port or 3306,
-            "user": parsed.username,
+            "user": parsed.username,  # Use username from URL
             "password": password,
             "database": parsed.path.lstrip("/")
         }
