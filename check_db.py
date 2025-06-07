@@ -4,7 +4,7 @@ import time
 import mysql.connector
 import logging
 import sys
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for MYSQL_URL first
+    # Checking for MYSQL_URL
     if os.getenv("MYSQL_URL"):
         logger.info("Using MYSQL_URL from environment")
         # Log the URL format (without password) for debugging
@@ -51,8 +51,8 @@ def parse_mysql_url(url):
     
     parsed = urlparse(url)
     
-    # URL decode the password to handle special characters
-    password = unquote(parsed.password) if parsed.password else ""
+    # Use password as-is without any decoding
+    password = parsed.password if parsed.password else ""
     
     # Log parsed components (excluding password)
     logger.info("Parsed URL components:")
@@ -64,34 +64,22 @@ def parse_mysql_url(url):
     return {
         "host": parsed.hostname,
         "port": parsed.port or 3306,
-        "user": parsed.username,  # Use the username from the URL
+        "user": parsed.username,
         "password": password,
         "database": parsed.path.lstrip("/")
     }
 
-def try_connect(conn_params, use_socket=False):
+def try_connect(conn_params):
     """Try to connect to the database with the given parameters."""
     try:
-        if use_socket:
-            # Try connecting via socket
-            logger.info("Attempting socket connection at /var/run/mysqld/mysqld.sock")
-            conn = mysql.connector.connect(
-                unix_socket="/var/run/mysqld/mysqld.sock",
-                user=conn_params["user"],
-                password=conn_params["password"],
-                database=conn_params["database"],
-                connect_timeout=10,
-                auth_plugin='mysql_native_password'
-            )
-        else:
-            # Try connecting via TCP
-            logger.info("Attempting TCP connection at %s:%s as user %s", 
-                       conn_params["host"], conn_params["port"], conn_params["user"])
-            conn = mysql.connector.connect(
-                **conn_params,
-                connect_timeout=10,
-                auth_plugin='mysql_native_password'
-            )
+        # Trying to connect via TCP
+        logger.info("Attempting TCP connection at %s:%s as user %s", 
+                   conn_params["host"], conn_params["port"], conn_params["user"])
+        conn = mysql.connector.connect(
+            **conn_params,
+            connect_timeout=10,
+            auth_plugin='mysql_native_password'
+        )
         
         if conn.is_connected():
             logger.info("Successfully connected to database")
@@ -120,22 +108,17 @@ def check_db():
                     logger.error("Failed to parse MYSQL_URL: %s", str(e))
                     return False
             else:
-                # Use Railway format variables
                 conn_params = {
                     "host": os.getenv("MYSQLHOST"),
                     "port": int(os.getenv("MYSQLPORT", "3306")),
-                    "user": os.getenv("MYSQLUSER"),  # Use MYSQLUSER instead of forcing root
+                    "user": os.getenv("MYSQLUSER"),
                     "password": os.getenv("MYSQLPASSWORD"),
                     "database": os.getenv("MYSQLDATABASE")
                 }
                 logger.info("Using Railway format variables")
             
-            # Try socket connection first
-            if try_connect(conn_params, use_socket=True):
-                return True
-                
-            # If socket fails, try TCP connection
-            if try_connect(conn_params, use_socket=False):
+            # Trying TCP connection
+            if try_connect(conn_params):
                 return True
             
             attempt += 1

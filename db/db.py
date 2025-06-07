@@ -8,7 +8,6 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 import time
 import sys
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -16,12 +15,11 @@ load_dotenv()
 
 def validate_env():
     """Validate that all required environment variables are set."""
-    # Check for MYSQL_URL first
+    # Checking for MYSQL_URL
     if os.getenv("MYSQL_URL"):
         logger.info("Using MYSQL_URL from environment")
         return True
-        
-    # Check for Railway format variables
+    
     required_vars = [
         "MYSQLHOST",
         "MYSQLPORT",
@@ -44,16 +42,15 @@ def validate_env():
 
 def get_database_url():
     """Get and validate the database URL."""
-    # Try to get the MYSQL_URL first
     DATABASE_URL = os.getenv("MYSQL_URL")
     if DATABASE_URL:
         logger.info("Using MYSQL_URL from environment")
-        # Parse the URL to ensure it's in the correct format
+        # Parsing the URL to ensure it's in the correct format
         if DATABASE_URL.startswith('mysql://'):
             # Convert to SQLAlchemy format
             parsed = urllib.parse.urlparse(DATABASE_URL)
             
-            # Extract components
+            # Extracting components
             username = parsed.username
             password = parsed.password
             hostname = parsed.hostname
@@ -63,7 +60,7 @@ def get_database_url():
             # URL encode the password
             password = urllib.parse.quote_plus(password)
             
-            # Construct the URL
+            # Constructing the URL
             sqlalchemy_url = f"mysql+mysqlconnector://{username}:{password}@{hostname}:{port}/{database}"
             logger.info("SQLAlchemy URL constructed successfully")
             return sqlalchemy_url
