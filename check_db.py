@@ -64,10 +64,43 @@ def parse_mysql_url(url):
     return {
         "host": parsed.hostname,
         "port": parsed.port or 3306,
-        "user": "root",  # Force using root user
+        "user": parsed.username,  # Use the username from the URL
         "password": password,
         "database": parsed.path.lstrip("/")
     }
+
+def try_connect(conn_params, use_socket=False):
+    """Try to connect to the database with the given parameters."""
+    try:
+        if use_socket:
+            # Try connecting via socket
+            logger.info("Attempting socket connection at /var/run/mysqld/mysqld.sock")
+            conn = mysql.connector.connect(
+                unix_socket="/var/run/mysqld/mysqld.sock",
+                user=conn_params["user"],
+                password=conn_params["password"],
+                database=conn_params["database"],
+                connect_timeout=10,
+                auth_plugin='mysql_native_password'
+            )
+        else:
+            # Try connecting via TCP
+            logger.info("Attempting TCP connection at %s:%s as user %s", 
+                       conn_params["host"], conn_params["port"], conn_params["user"])
+            conn = mysql.connector.connect(
+                **conn_params,
+                connect_timeout=10,
+                auth_plugin='mysql_native_password'
+            )
+        
+        if conn.is_connected():
+            logger.info("Successfully connected to database")
+            conn.close()
+            return True
+            
+    except Exception as e:
+        logger.warning("Connection attempt failed: %s", str(e))
+        return False
 
 def check_db():
     """Check database connection with retry logic."""
@@ -91,27 +124,27 @@ def check_db():
                 conn_params = {
                     "host": os.getenv("MYSQLHOST"),
                     "port": int(os.getenv("MYSQLPORT", "3306")),
-                    "user": "root",  # Force using root user
+                    "user": os.getenv("MYSQLUSER"),  # Use MYSQLUSER instead of forcing root
                     "password": os.getenv("MYSQLPASSWORD"),
                     "database": os.getenv("MYSQLDATABASE")
                 }
                 logger.info("Using Railway format variables")
             
-            # Log connection attempt details (excluding password)
-            logger.info("Attempting to connect to database at %s:%s as user %s", 
-                       conn_params["host"], conn_params["port"], conn_params["user"])
-            
-            # Try to connect
-            conn = mysql.connector.connect(
-                **conn_params,
-                connect_timeout=10,
-                auth_plugin='mysql_native_password'
-            )
-            
-            if conn.is_connected():
-                logger.info("Successfully connected to database")
-                conn.close()
+            # Try socket connection first
+            if try_connect(conn_params, use_socket=True):
                 return True
+                
+            # If socket fails, try TCP connection
+            if try_connect(conn_params, use_socket=False):
+                return True
+            
+            attempt += 1
+            if attempt < max_attempts:
+                logger.info("Waiting 2 seconds before next attempt...")
+                time.sleep(2)
+            else:
+                logger.error("Failed to connect to database after %d attempts", max_attempts)
+                return False
             
         except Exception as e:
             attempt += 1
