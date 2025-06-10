@@ -11,6 +11,7 @@ import os
 from dotenv import load_dotenv
 import time
 from typing import Optional
+import uvicorn
 
 # Load environment variables
 load_dotenv()
@@ -25,8 +26,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Get port from environment variable or use default
+port = int(os.environ.get("PORT", 8000))
+logger.info(f"Using port: {port}")
+
 # Get allowed origins from environment variable or use default
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://ai-faq-pied.vercel.app/").split(",")
+ALLOWED_ORIGINS = ["*"]  # Allow all origins
 
 app = FastAPI(
     title="FAQ API",
@@ -132,3 +137,6 @@ async def database_exception_handler(request: Request, exc: Exception):
         logger.error(f"Database error: {str(exc)}")
         return {"error": "Database error", "detail": str(exc)}
     raise exc
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

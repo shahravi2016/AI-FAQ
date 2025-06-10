@@ -19,7 +19,7 @@ def validate_env():
         url = os.getenv("MYSQL_PUBLIC_URL")
         if url:
             parsed = urlparse(url)
-            safe_url = f"mysql://{parsed.username}:***@{parsed.hostname}:{parsed.port or 3306}/{parsed.path.lstrip('/')}"
+            safe_url = f"mysql://{parsed.username}:***@{parsed.hostname}:{parsed.port or 22032}/{parsed.path.lstrip('/')}"
             logger.info("MYSQL_PUBLIC_URL format: %s", safe_url)
         return True
 
@@ -64,13 +64,13 @@ def get_connection_params():
         # Log parsed components (excluding password)
         logger.info("Parsed URL components:")
         logger.info("  Host: %s", parsed.hostname)
-        logger.info("  Port: %s", parsed.port or 3306)
+        logger.info("  Port: %s", parsed.port or 22032)  # Default to 22032 if not specified
         logger.info("  User: %s", parsed.username)
         logger.info("  Database: %s", parsed.path.lstrip("/"))
         
         return {
             "host": parsed.hostname,
-            "port": parsed.port or 3306,
+            "port": parsed.port or 22032,  # Default to 22032 if not specified
             "user": parsed.username,
             "password": password,
             "database": parsed.path.lstrip("/")
@@ -81,7 +81,7 @@ def get_connection_params():
         logger.info("Using Railway format variables")
         return {
             "host": os.getenv("MYSQLHOST"),
-            "port": int(os.getenv("MYSQLPORT", "3306")),
+            "port": int(os.getenv("MYSQLPORT", "22032")),  # Default to 22032
             "user": os.getenv("MYSQLUSER"),
             "password": os.getenv("MYSQLPASSWORD"),
             "database": os.getenv("MYSQLDATABASE")

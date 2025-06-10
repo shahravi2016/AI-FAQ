@@ -33,7 +33,7 @@ fi\n\
 alembic upgrade head\n\
 \n\
 # Start the application\n\
-exec gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --log-level info\n\
+exec python main.py\n\
 ' > /app/start.sh
 
 # Make startup script executable
@@ -41,10 +41,9 @@ RUN chmod +x /app/start.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+    PYTHONDONTWRITEBYTECODE=1
 
-# Expose the port
+# Expose the port (will be overridden by Railway)
 EXPOSE $PORT
 
 # Run the startup script
