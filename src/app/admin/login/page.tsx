@@ -54,9 +54,9 @@ export default function AdminLogin() {
               <Cpu className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-white">Neural Access Portal</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-white">Admin Access Portal</CardTitle>
           <CardDescription className="text-center text-gray-400">
-            Enter your credentials to access the neural network
+            Enter your credentials to access the Admin
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,7 +91,7 @@ export default function AdminLogin() {
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
               disabled={isLoading}
             >
-              {isLoading ? "Authenticating..." : "Access Neural Network"}
+              {isLoading ? "Authenticating..." : "Access Admin"}
             </Button>
           </form>
         </CardContent>
