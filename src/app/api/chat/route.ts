@@ -15,7 +15,7 @@ interface ErrorResponse {
 }
 
 // API endpoint configuration
-const API_ENDPOINT = "http://localhost:8000/ask";
+const API_ENDPOINT = "https://ai-faq-production.up.railway.app/ask";
 const TIMEOUT_MS = 30000; // 30 seconds timeout
 
 export async function POST(req: NextRequest) {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: JSON.stringify({ question: body.question }),
+        body: JSON.stringify({ question: body.question, topic: "general" }),
         signal: controller.signal,
       });
 
