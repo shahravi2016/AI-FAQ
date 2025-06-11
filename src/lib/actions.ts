@@ -59,7 +59,7 @@ export async function logoutAdmin() {
 // Function to get analytics data from the backend
 export async function getQuestionAnalytics(): Promise<QuestionAnalytics> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics`, {
+    const response = await fetch(`https://ai-faq-production.up.railway.app/analytics`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
