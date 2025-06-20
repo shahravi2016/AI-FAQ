@@ -12,7 +12,7 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-starfield text-moonlight">
       {/* Enhanced Header/Menu Bar */}
       <header className="border-b border-meteor/50 backdrop-blur-sm bg-starfield/80 sticky top-0 z-10">
-        <div className="container mx-auto py-4 px-4">
+        <div className="container mx-auto py-3 px-2 sm:py-4 sm:px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center">
@@ -33,13 +33,13 @@ export default function HomePage() {
                   <path d="M9 11l6 6"></path>
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent animate-text-shimmer">
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent animate-text-shimmer">
                 AI FAQ Assistant
               </h1>
             </div>
 
             <nav className="hidden md:block">
-              <ul className="flex gap-6">
+              <ul className="flex gap-4 md:gap-6">
                 <li>
                   <Link href="/" className="text-nebula hover:text-aurora transition-colors flex items-center">
                     <svg
@@ -126,7 +126,7 @@ export default function HomePage() {
               </ul>
             </nav>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button className="md:hidden text-nebula hover:text-aurora">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -150,13 +150,13 @@ export default function HomePage() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 container mx-auto py-8 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
+      <main className="flex-1 container mx-auto py-4 px-2 sm:py-8 sm:px-4">
+        <div className="max-w-full sm:max-w-3xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
               Your AI Knowledge Assistant
             </h2>
-            <p className="text-nebula mb-6">
+            <p className="text-nebula mb-4 sm:mb-6 text-sm sm:text-base">
               Get instant, accurate answers to all your questions about any topic. Powered by advanced AI to help you
               find the information you need.
             </p>
@@ -167,8 +167,8 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-meteor/50 py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-nebula">
+      <footer className="border-t border-meteor/50 py-4 sm:py-6">
+        <div className="container mx-auto px-2 sm:px-4 text-center text-xs sm:text-sm text-nebula">
           <p>© {new Date().getFullYear()} AI FAQ Assistant. All rights reserved.</p>
         </div>
       </footer>

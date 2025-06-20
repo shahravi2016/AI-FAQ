@@ -92,10 +92,10 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex flex-col space-y-8">
+    <div className="flex flex-col space-y-6 sm:space-y-8">
       {/* Topic Suggestions */}
-      <div className="border border-meteor/50 rounded-lg p-4 bg-meteor/30 backdrop-blur-sm">
-        <div className="flex items-center mb-3">
+      <div className="border border-meteor/50 rounded-lg p-3 sm:p-4 bg-meteor/30 backdrop-blur-sm">
+        <div className="flex items-center mb-2 sm:mb-3">
           <Sparkles className="h-4 w-4 text-stellar mr-2" />
           <h3 className="text-sm font-medium text-moonlight">Suggested Topics</h3>
         </div>
@@ -103,13 +103,13 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex flex-col h-[700px] border border-meteor/50 rounded-lg shadow-lg overflow-hidden bg-meteor/30 backdrop-blur-sm relative animate-pulse-glow">
+      <div className="flex flex-col h-[60vh] min-h-[350px] sm:h-[700px] border border-meteor/50 rounded-lg shadow-lg overflow-hidden bg-meteor/30 backdrop-blur-sm relative animate-pulse-glow">
         {/* Decorative elements for futuristic feel */}
         <div className="absolute -top-10 -right-10 w-20 h-20 bg-stellar/10 rounded-full blur-xl"></div>
         <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-aurora/10 rounded-full blur-xl"></div>
 
         {/* Chat header with actions */}
-        <div className="border-b border-meteor/50 p-3 bg-meteor/50 backdrop-blur-sm flex justify-between items-center">
+        <div className="border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
           <div className="flex items-center">
             <div className="w-6 h-6 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center mr-2">
               <svg
@@ -129,9 +129,9 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
                 <path d="M9 11l6 6"></path>
               </svg>
             </div>
-            <span className="text-sm font-medium text-moonlight">AI Assistant</span>
+            <span className="text-xs sm:text-sm font-medium text-moonlight">AI Assistant</span>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-1 sm:space-x-2">
             <Button
               variant="ghost"
               size="sm"
@@ -154,7 +154,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
         </div>
 
         {/* Chat messages area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-cosmic scrollbar-track-meteor/30">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-4 scrollbar-thin scrollbar-thumb-cosmic scrollbar-track-meteor/30">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center text-nebula">
@@ -173,7 +173,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
         </div>
 
         {/* Input area */}
-        <div className="border-t border-meteor/50 p-4 bg-meteor/50 backdrop-blur-sm">
+        <div className="border-t border-meteor/50 p-2 sm:p-4 bg-meteor/50 backdrop-blur-sm">
           <QuestionInput
             onSubmit={handleSubmit}
             isLoading={isLoading}
@@ -185,9 +185,9 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
 
       {/* Previous Questions Section */}
       {messages.length > 0 && (
-        <div className="border border-meteor/50 rounded-lg shadow-lg p-5 bg-meteor/30 backdrop-blur-sm relative animate-pulse-glow">
+        <div className="border border-meteor/50 rounded-lg shadow-lg p-3 sm:p-5 bg-meteor/30 backdrop-blur-sm relative animate-pulse-glow">
           <div className="absolute -top-10 -right-10 w-20 h-20 bg-stellar/10 rounded-full blur-xl"></div>
-          <h3 className="text-lg font-medium mb-4 bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent">
+          <h3 className="text-base sm:text-lg font-medium mb-2 sm:mb-4 bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent">
             Conversation History
           </h3>
           <PreviousQuestions
@@ -200,48 +200,19 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       {/* Video Tutorial Section */}
       <div className="border border-meteor/50 rounded-lg shadow-lg overflow-hidden bg-meteor/30 backdrop-blur-sm relative">
         <div className="absolute -top-10 -left-10 w-20 h-20 bg-aurora/10 rounded-full blur-xl"></div>
-        <div className="p-5">
-          {/* <h3 className="text-xl font-medium mb-2 bg-gradient-to-r from-stellar to-cosmic bg-clip-text text-transparent">
-            How to Use This AI Assistant
-          </h3>
-          <p className="text-nebula mb-4">
-            Watch this quick tutorial to learn how to get the most out of your AI assistant.
-          </p>
-
-          <div className="aspect-video bg-starfield rounded-lg overflow-hidden border border-meteor/50 flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="w-16 h-16 rounded-full bg-cosmic/30 border border-cosmic/50 flex items-center justify-center mx-auto mb-4 hover:bg-cosmic/50 transition-all cursor-pointer">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-moonlight"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-              </div>
-              <p className="text-nebula">Click to play tutorial video</p>
+        <div className="p-3 sm:p-5">
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+            <div className="p-3 sm:p-4 bg-meteor/50 rounded-lg border border-meteor/70">
+              <h4 className="font-medium text-moonlight mb-1 sm:mb-2 text-sm sm:text-base">1. Ask a Question</h4>
+              <p className="text-xs sm:text-sm text-nebula">Type your question in the input box and click the Ask button.</p>
             </div>
-          </div> */}
-
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-meteor/50 rounded-lg border border-meteor/70">
-              <h4 className="font-medium text-moonlight mb-2">1. Ask a Question</h4>
-              <p className="text-sm text-nebula">Type your question in the input box and click the Ask button.</p>
+            <div className="p-3 sm:p-4 bg-meteor/50 rounded-lg border border-meteor/70">
+              <h4 className="font-medium text-moonlight mb-1 sm:mb-2 text-sm sm:text-base">2. Get AI Response</h4>
+              <p className="text-xs sm:text-sm text-nebula">The AI will process your question and provide a helpful response.</p>
             </div>
-            <div className="p-4 bg-meteor/50 rounded-lg border border-meteor/70">
-              <h4 className="font-medium text-moonlight mb-2">2. Get AI Response</h4>
-              <p className="text-sm text-nebula">The AI will process your question and provide a helpful response.</p>
-            </div>
-            <div className="p-4 bg-meteor/50 rounded-lg border border-meteor/70">
-              <h4 className="font-medium text-moonlight mb-2">3. Review History</h4>
-              <p className="text-sm text-nebula">View your previous questions and click to ask them again.</p>
+            <div className="p-3 sm:p-4 bg-meteor/50 rounded-lg border border-meteor/70">
+              <h4 className="font-medium text-moonlight mb-1 sm:mb-2 text-sm sm:text-base">3. Review History</h4>
+              <p className="text-xs sm:text-sm text-nebula">View your previous questions and click to ask them again.</p>
             </div>
           </div>
         </div>
