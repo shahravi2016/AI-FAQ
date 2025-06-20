@@ -14,12 +14,14 @@ export default function AboutPage() {
       {/* Main content */}
       <main className="flex-1 container mx-auto py-6 px-2 sm:py-12 sm:px-4">
         <div className="max-w-full sm:max-w-3xl mx-auto">
-          <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-8 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold mb-4 text-moonlight sm:text-4xl sm:mb-8 sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
             About AI FAQ Assistant
           </h1>
           <div className="space-y-4 sm:space-y-8">
             <section className="border border-meteor/50 rounded-lg p-3 sm:p-6 bg-meteor/30 backdrop-blur-sm">
-              <h2 className="text-lg sm:text-2xl font-semibold mb-2 sm:mb-4 text-moonlight">Our Mission</h2>
+              <h2 className="text-lg font-semibold mb-2 text-moonlight sm:text-2xl sm:mb-4 sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                Our Mission
+              </h2>
               <p className="text-nebula mb-2 sm:mb-4 text-sm sm:text-base">
                 AI FAQ Assistant was created to democratize access to information through the power of artificial
                 intelligence. We believe that everyone should have instant access to accurate, helpful answers to their
@@ -31,7 +33,9 @@ export default function AboutPage() {
               </p>
             </section>
             <section className="border border-meteor/50 rounded-lg p-3 sm:p-6 bg-meteor/30 backdrop-blur-sm">
-              <h2 className="text-lg sm:text-2xl font-semibold mb-2 sm:mb-4 text-moonlight">How It Works</h2>
+              <h2 className="text-lg font-semibold mb-2 text-moonlight sm:text-2xl sm:mb-4 sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                How It Works
+              </h2>
               <p className="text-nebula mb-2 sm:mb-4 text-sm sm:text-base">
                 Our AI FAQ Assistant uses advanced natural language processing to understand your questions and generate
                 helpful, accurate responses in real-time. The system is constantly learning and improving based on user
@@ -68,7 +72,9 @@ export default function AboutPage() {
               </div>
             </section>
             <section className="border border-meteor/50 rounded-lg p-3 sm:p-6 bg-meteor/30 backdrop-blur-sm">
-              <h2 className="text-lg sm:text-2xl font-semibold mb-2 sm:mb-4 text-moonlight">Our Technology</h2>
+              <h2 className="text-lg font-semibold mb-2 text-moonlight sm:text-2xl sm:mb-4 sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                Our Technology
+              </h2>
               <p className="text-nebula mb-2 sm:mb-4 text-sm sm:text-base">
                 The AI FAQ Assistant is powered by state-of-the-art large language models that have been trained on
                 diverse datasets to ensure broad knowledge coverage and accurate responses.

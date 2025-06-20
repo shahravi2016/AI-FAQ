@@ -13,13 +13,15 @@ export default function ContactPage() {
       {/* Main content */}
       <main className="flex-1 container mx-auto py-12 px-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold mb-8 text-moonlight sm:text-4xl sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
             Contact Us
           </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="border border-meteor/50 rounded-lg p-6 bg-meteor/30 backdrop-blur-sm">
-              <h2 className="text-2xl font-semibold mb-4 text-moonlight">Get In Touch</h2>
+              <h2 className="text-lg font-semibold mb-4 text-moonlight sm:text-2xl sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                Get In Touch
+              </h2>
               <p className="text-nebula mb-6">
                 Have questions, feedback, or suggestions? We&apos;d love to hear from you! Fill out the form and our team
                 will get back to you as soon as possible.
@@ -84,7 +86,9 @@ export default function ContactPage() {
             </div>
 
             <div className="border border-meteor/50 rounded-lg p-6 bg-meteor/30 backdrop-blur-sm">
-              <h2 className="text-2xl font-semibold mb-4 text-moonlight">Connect With Us</h2>
+              <h2 className="text-lg font-semibold mb-4 text-moonlight sm:text-2xl sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                Connect With Us
+              </h2>
 
               <div className="space-y-6">
                 <div>

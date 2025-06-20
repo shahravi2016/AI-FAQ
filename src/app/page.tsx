@@ -33,7 +33,7 @@ export default function HomePage() {
                   <path d="M9 11l6 6"></path>
                 </svg>
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent animate-text-shimmer">
+              <h1 className="text-xl font-bold mb-4 text-moonlight sm:text-2xl sm:bg-gradient-to-r sm:from-aurora sm:to-stellar sm:bg-clip-text sm:text-transparent animate-text-shimmer">
                 AI FAQ Assistant
               </h1>
             </div>
@@ -153,7 +153,7 @@ export default function HomePage() {
       <main className="flex-1 container mx-auto py-4 px-2 sm:py-8 sm:px-4">
         <div className="max-w-full sm:max-w-3xl mx-auto">
           <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold mb-2 text-moonlight sm:text-3xl sm:mb-4 sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
               Your AI Knowledge Assistant
             </h2>
             <p className="text-nebula mb-4 sm:mb-6 text-sm sm:text-base">

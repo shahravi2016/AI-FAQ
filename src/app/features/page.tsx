@@ -14,7 +14,7 @@ export default function FeaturesPage() {
       {/* Main content */}
       <main className="flex-1 container mx-auto py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-aurora via-stellar to-cosmic bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold mb-8 text-moonlight sm:text-4xl sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
             Features
           </h1>
 
@@ -126,7 +126,9 @@ export default function FeaturesPage() {
 
           <div className="border border-meteor/50 rounded-lg overflow-hidden bg-meteor/30 backdrop-blur-sm mb-12">
             <div className="p-6">
-              <h2 className="text-2xl font-semibold mb-4 text-moonlight">Advanced Capabilities</h2>
+              <h2 className="text-lg font-semibold mb-4 text-moonlight sm:text-xl sm:bg-gradient-to-r sm:from-aurora sm:via-stellar sm:to-cosmic sm:bg-clip-text sm:text-transparent">
+                Advanced Capabilities
+              </h2>
               <p className="text-nebula mb-6">
                 Our AI FAQ Assistant goes beyond simple question-answering with these advanced features:
               </p>
