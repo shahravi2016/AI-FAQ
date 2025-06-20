@@ -109,7 +109,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
         <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-aurora/10 rounded-full blur-xl"></div>
 
         {/* Chat header with actions */}
-        <div className="border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <div className="sticky top-0 z-10 border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
           <div className="flex items-center">
             <div className="w-6 h-6 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center mr-2">
               <svg
@@ -187,7 +187,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       {messages.length > 0 && (
         <div className="border border-meteor/50 rounded-lg shadow-lg p-3 sm:p-5 bg-meteor/30 backdrop-blur-sm relative animate-pulse-glow">
           <div className="absolute -top-10 -right-10 w-20 h-20 bg-stellar/10 rounded-full blur-xl"></div>
-          <h3 className="text-base sm:text-lg font-medium mb-2 sm:mb-4 bg-gradient-to-r from-aurora to-stellar bg-clip-text text-transparent">
+          <h3 className="text-base font-medium mb-2 text-moonlight sm:text-lg sm:mb-4 sm:bg-gradient-to-r sm:from-aurora sm:to-stellar sm:bg-clip-text sm:text-transparent">
             Conversation History
           </h3>
           <PreviousQuestions
