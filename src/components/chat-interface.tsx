@@ -109,7 +109,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
         <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-aurora/10 rounded-full blur-xl"></div>
 
         {/* Chat header with actions */}
-        <div className="sticky top-0 z-10 border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <div className="border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 sm:sticky sm:top-0 sm:z-10">
           <div className="flex items-center">
             <div className="w-6 h-6 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center mr-2">
               <svg
