@@ -31,7 +31,7 @@ export default function QuestionInput({ onSubmit, isLoading, topic, onTopicChang
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder={`Ask me anything about ${topic}!`}
+          placeholder={`Ask me about any topic!`}
           disabled={isLoading}
           className="flex-1 bg-meteor/50 border-meteor text-moonlight placeholder:text-nebula/70 focus:border-stellar focus:ring-1 focus:ring-stellar/50"
           aria-label="Your question"
@@ -55,7 +55,7 @@ export default function QuestionInput({ onSubmit, isLoading, topic, onTopicChang
         </Button>
       </div>
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-nebula flex items-center">
+        {/* <span className="text-nebula flex items-center">
           <Sparkles className="h-3 w-3 mr-1 text-stellar" />
           Topic:
         </span>
@@ -65,8 +65,8 @@ export default function QuestionInput({ onSubmit, isLoading, topic, onTopicChang
           onChange={(e) => onTopicChange(e.target.value)}
           className="h-8 max-w-[200px] bg-meteor/50 border-meteor text-moonlight placeholder:text-nebula/70 focus:border-stellar focus:ring-1 focus:ring-stellar/50"
           aria-label="Topic"
-        />
-        <span className="text-nebula/70 text-xs">Change the topic to customize responses</span>
+        /> */}
+        {/* <span className="text-nebula/70 text-xs">Change the topic to customize responses</span> */}
       </div>
     </form>
   )

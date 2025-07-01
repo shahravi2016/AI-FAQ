@@ -28,10 +28,10 @@ export default function TopicSuggestions({ onSelectTopic, currentTopic }: TopicS
           size="sm"
           className={`rounded-full text-xs px-3 py-1 h-auto border ${
             currentTopic === topic
-              ? "bg-cosmic/30 border-cosmic text-moonlight"
+              ? "bg-meteor/30 border-meteor/50 text-nebula hover:bg-cosmic/20 hover:border-cosmic/30 hover:text-moonlight"
               : "bg-meteor/30 border-meteor/50 text-nebula hover:bg-cosmic/20 hover:border-cosmic/30 hover:text-moonlight"
           }`}
-          onClick={() => onSelectTopic(topic)}
+          // onClick={() => onSelectTopic(topic)}
         >
           {topic}
         </Button>

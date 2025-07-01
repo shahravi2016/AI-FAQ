@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Cpu } from "lucide-react"
-import { authenticateAdmin } from "@/lib/actions"
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -27,15 +26,10 @@ export default function AdminLogin() {
       setError("Please enter your username and password")
       setIsLoading(false)
       return
-    }
-
-    const result = await authenticateAdmin({ username, password })
-    
-    if (result.success) {
-      router.push("/admin/dashboard")
     } else {
-      setError(result.error || "Invalid username or password")
+      setError("Invalid username or password")
       setIsLoading(false)
+      return
     }
   }
 
@@ -54,9 +48,9 @@ export default function AdminLogin() {
               <Cpu className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-white">Admin Access Portal</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-white">Neural Access Portal</CardTitle>
           <CardDescription className="text-center text-gray-400">
-            Enter your credentials to access the Admin
+            Enter your credentials to access the neural network
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,7 +85,7 @@ export default function AdminLogin() {
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
               disabled={isLoading}
             >
-              {isLoading ? "Authenticating..." : "Access Admin"}
+              {isLoading ? "Authenticating..." : "Access Neural Network"}
             </Button>
           </form>
         </CardContent>

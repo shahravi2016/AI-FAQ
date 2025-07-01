@@ -19,7 +19,6 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
   const [topic, setTopic] = useState(defaultTopic)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
@@ -27,7 +26,6 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
   const handleSubmit = async (question: string) => {
     if (!question.trim()) return
 
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: question,
@@ -39,7 +37,6 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
     setIsLoading(true)
 
     try {
-      // Call our API route instead of the backend directly
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -56,10 +53,9 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
       const data = await response.json()
       console.log("API response:", data)
 
-      // Add AI response
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.text, // Use data.text as that's what our API route returns
+        content: data.text,
         role: "assistant",
         timestamp: new Date(),
       }
@@ -68,7 +64,6 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
     } catch (error) {
       console.error("Error generating response:", error)
 
-      // Add error message with more specific error details
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: error instanceof Error ? error.message : "Sorry, I couldn't generate a response. Please try again.",
@@ -160,7 +155,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
               <div className="text-center text-nebula">
                 <p className="mb-2">No messages yet</p>
                 <p className="text-stellar">
-                  Ask me anything about <span className="font-semibold">{topic}</span>!
+                  Feel free to ask questions!
                 </p>
               </div>
             </div>
@@ -177,7 +172,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
           <QuestionInput
             onSubmit={handleSubmit}
             isLoading={isLoading}
-            topic={topic}
+            topic={""}
             onTopicChange={handleTopicChange}
           />
         </div>
