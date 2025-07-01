@@ -20,6 +20,15 @@ def init_db():
                 updated_at=datetime.now()
             ),
             Question(
+                question="What do you mean by Algorithms?",
+                response="Algorithm means...",
+                category="educational",
+                importance=8.5,
+                is_critical=0,
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            ),
+            Question(
                 question="What is machine learning?",
                 response="Machine learning is...",
                 category="educational",
