@@ -16,7 +16,7 @@ export default function HomePage() {
         <div className="container mx-1 py-3 px-2 sm:py-4 sm:px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <Image src="/ai-faq.png" alt="Logo" width={70} height={70} />
+              <Image src="/ai-faq-logo-removebg-preview.png" alt="Logo" width={70} height={70} />
               <h1 className="text-xl font-bold mb-4 text-moonlight sm:text-2xl sm:bg-gradient-to-r sm:from-aurora sm:to-stellar sm:bg-clip-text sm:text-transparent animate-text-shimmer">
                 AI FAQ Assistant
               </h1>

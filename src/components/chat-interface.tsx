@@ -8,6 +8,7 @@ import PreviousQuestions from "./previous-questions"
 import TopicSuggestions from "./topic-suggestions"
 import { Button } from "@/components/ui/button"
 import { Sparkles, Trash2, Share2 } from "lucide-react"
+import Image from "next/image"
 
 interface ChatInterfaceProps {
   defaultTopic: string
@@ -106,7 +107,7 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
         {/* Chat header with actions */}
         <div className="border-b border-meteor/50 p-2 sm:p-3 bg-meteor/50 backdrop-blur-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 sm:sticky sm:top-0 sm:z-10">
           <div className="flex items-center">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center mr-2">
+            {/* <div className="w-6 h-6 rounded-full bg-gradient-to-r from-aurora to-stellar flex items-center justify-center mr-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="12"
@@ -123,7 +124,8 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
                 <path d="M9 17l6-6"></path>
                 <path d="M9 11l6 6"></path>
               </svg>
-            </div>
+            </div> */}
+            <Image src="/ai-faq-logo-removebg-preview.png" alt="AI Assistant" width={24} height={24} />&nbsp;
             <span className="text-xs sm:text-sm font-medium text-moonlight">AI Assistant</span>
           </div>
           <div className="flex space-x-1 sm:space-x-2">
