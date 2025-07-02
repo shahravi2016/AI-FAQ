@@ -133,8 +133,8 @@ export default function ChatInterface({ defaultTopic }: ChatInterfaceProps) {
               className="h-8 px-2 text-nebula hover:text-moonlight hover:bg-meteor/50 flex items-center"
               onClick={() => {}}
             >
-              <Share2 className="h-4 w-4 mr-1" />
-              <span className="text-xs">Share</span>
+              {/* <Share2 className="h-4 w-4 mr-1" /> */}
+              {/* <span className="text-xs">Share</span> */}
             </Button>
             <Button
               variant="ghost"
